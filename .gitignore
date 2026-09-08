@@ -1,0 +1,12 @@
+# the bot's memory (has your sent history)
+state.db
+state.db-journal
+# your secrets / paths
+config.env
+# python
+.venv/
+__pycache__/
+*.pyc
+# scratch
+/tmp/
+*.log

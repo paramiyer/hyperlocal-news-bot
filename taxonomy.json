@@ -1,0 +1,341 @@
+{
+  "_model": "Scored discovery, mirroring UC1/branch scoring: every candidate scored on normalized 0-1 layers, combined by normalized weights, ranked. No per-source special-casing.",
+  "origin": {
+    "name": "__ORIGIN_NAME__",
+    "lat": 0.0,
+    "lon": 0.0,
+    "_note": "set to YOUR locality centre in config"
+  },
+  "signal_types": {
+    "news": {
+      "output": "ranked bullets",
+      "cap": 6,
+      "select": "top_by_score"
+    },
+    "religious": {
+      "output": "listed section",
+      "cap": 8,
+      "select": "all_passing"
+    },
+    "bright_spot": {
+      "output": "single slot",
+      "cap": 1,
+      "select": "top_by_score"
+    },
+    "community": {
+      "output": "listed section",
+      "cap": 4,
+      "select": "all_passing"
+    }
+  },
+  "sectors": {
+    "safety": {
+      "signal_type": "news",
+      "resident_weight": 1.0,
+      "recency_window_h": 24,
+      "emoji": "🚨"
+    },
+    "transport": {
+      "signal_type": "news",
+      "resident_weight": 0.95,
+      "recency_window_h": 48,
+      "emoji": "🚇",
+      "imminent": true
+    },
+    "civic": {
+      "signal_type": "news",
+      "resident_weight": 0.85,
+      "recency_window_h": 48,
+      "emoji": "🏗",
+      "imminent": true
+    },
+    "traffic": {
+      "signal_type": "news",
+      "resident_weight": 0.8,
+      "recency_window_h": 48,
+      "emoji": "🚗",
+      "imminent": true
+    },
+    "environment": {
+      "signal_type": "news",
+      "resident_weight": 0.7,
+      "recency_window_h": 24,
+      "emoji": "🌧"
+    },
+    "events": {
+      "signal_type": "news",
+      "resident_weight": 0.55,
+      "recency_window_h": 24,
+      "emoji": "🪔"
+    },
+    "property": {
+      "signal_type": "news",
+      "resident_weight": 0.45,
+      "recency_window_h": 24,
+      "emoji": "🏢"
+    },
+    "business": {
+      "signal_type": "news",
+      "resident_weight": 0.35,
+      "recency_window_h": 24,
+      "emoji": "🏪"
+    },
+    "rel_tambrahm": {
+      "signal_type": "religious",
+      "resident_weight": 0.5,
+      "recency_window_h": 24,
+      "emoji": "🛕"
+    },
+    "rel_jain": {
+      "signal_type": "religious",
+      "resident_weight": 0.5,
+      "recency_window_h": 24,
+      "emoji": "🛕",
+      "announce_once": true,
+      "horizon_h": 720,
+      "_touchpoints": "Appears TWICE: (1) announcement — first discovery; (2) reminder — the morning the event's ACTIONABLE deadline (arrival/registration close, else start) is within 24h. Anchoring on the deadline, not a fixed 48h-before-start, so a residential shibir surfaces on its arrival day, not a day early. Deduped otherwise. (Fixed 2026-09-07.)",
+      "reminder_window_h": 24,
+      "reminder_anchor": "deadline"
+    },
+    "rel_vaishnav": {
+      "signal_type": "religious",
+      "resident_weight": 0.5,
+      "recency_window_h": 24,
+      "emoji": "🛕",
+      "announce_once": true,
+      "horizon_h": 720,
+      "_touchpoints": "Appears TWICE: (1) announcement — first discovery; (2) reminder — the morning the event's ACTIONABLE deadline (arrival/registration close, else start) is within 24h. Anchoring on the deadline, not a fixed 48h-before-start, so a residential shibir surfaces on its arrival day, not a day early. Deduped otherwise. (Fixed 2026-09-07.)",
+      "reminder_window_h": 24,
+      "reminder_anchor": "deadline"
+    },
+    "bright": {
+      "signal_type": "bright_spot",
+      "resident_weight": 0.6,
+      "recency_window_h": 72,
+      "emoji": "✨"
+    },
+    "alerts": {
+      "signal_type": "news",
+      "resident_weight": 0.98,
+      "recency_window_h": 24,
+      "emoji": "⚠️",
+      "imminent": true,
+      "_desc": "weather red/orange alerts, heavy-rain/flooding warnings, safety advisories"
+    },
+    "utilities": {
+      "signal_type": "news",
+      "resident_weight": 0.9,
+      "recency_window_h": 48,
+      "emoji": "⚡",
+      "imminent": true,
+      "_desc": "power cuts, scheduled water shutdowns"
+    },
+    "fun_events": {
+      "signal_type": "community",
+      "resident_weight": 0.45,
+      "recency_window_h": 24,
+      "emoji": "🎉",
+      "announce_once": true,
+      "horizon_h": 720,
+      "eve_window_h": 48,
+      "_desc": "workshops, cultural shows, fun/community activities (BookMyShow, community halls)"
+    },
+    "elder_health": {
+      "signal_type": "community",
+      "resident_weight": 0.6,
+      "recency_window_h": 24,
+      "emoji": "🩺",
+      "announce_once": true,
+      "horizon_h": 720,
+      "eve_window_h": 48,
+      "_desc": "free/subsidised medical clinics, health & eye camps, check-ups for senior citizens"
+    }
+  },
+  "sources": {
+    "mumbai_traffic_police": {
+      "reliability": 1.0,
+      "note": "official notification"
+    },
+    "bmc": {
+      "reliability": 1.0,
+      "note": "official"
+    },
+    "central_railway": {
+      "reliability": 1.0,
+      "note": "official"
+    },
+    "parasdham": {
+      "reliability": 0.95,
+      "note": "primary org, Jain events",
+      "sectors": [
+        "rel_jain"
+      ]
+    },
+    "bhajansamaj": {
+      "reliability": 0.95,
+      "note": "primary org (YouTube+flyers)",
+      "sectors": [
+        "rel_tambrahm"
+      ]
+    },
+    "shankaralayam": {
+      "reliability": 0.95,
+      "note": "primary org (YouTube)",
+      "sectors": [
+        "rel_tambrahm"
+      ]
+    },
+    "murugan_temple": {
+      "reliability": 0.95,
+      "note": "primary org (YouTube)",
+      "sectors": [
+        "rel_tambrahm"
+      ]
+    },
+    "mid_day": {
+      "reliability": 0.85,
+      "note": "via Codex; crawler-blocked to us"
+    },
+    "free_press_journal": {
+      "reliability": 0.85,
+      "note": "crawlable"
+    },
+    "lokmat_times": {
+      "reliability": 0.8,
+      "note": "crawlable"
+    },
+    "bookmyshow": {
+      "reliability": 0.75,
+      "note": "ticketed community/cultural events"
+    },
+    "aggregator": {
+      "reliability": 0.45,
+      "note": "curlytales/prokerala etc - corroborate only"
+    },
+    "times_of_india": {
+      "reliability": 0.85,
+      "note": "via Codex; crawler-blocked to us"
+    },
+    "hindustan_times": {
+      "reliability": 0.85,
+      "note": "via Codex; crawler-blocked to us"
+    },
+    "indian_express": {
+      "reliability": 0.85,
+      "note": "via Codex; crawler-blocked to us"
+    },
+    "ndtv": {
+      "reliability": 0.82,
+      "note": "via Codex; crawler-blocked to us"
+    },
+    "native_planet": {
+      "reliability": 0.7,
+      "note": "aggregator; corroborate the primary (CR/BMC)"
+    },
+    "prahaar": {
+      "reliability": 0.78,
+      "note": "Marathi daily (Prahaar) — real newsroom, via Codex/web"
+    },
+    "loksatta": {
+      "reliability": 0.82,
+      "note": "Marathi daily (Indian Express group)"
+    },
+    "saamana": {
+      "reliability": 0.72,
+      "note": "Marathi daily (Shiv Sena) — corroborate political items"
+    },
+    "mumbai_live": {
+      "reliability": 0.75,
+      "note": "hyperlocal Mumbai, crawlable"
+    }
+  },
+  "excluded_sources": {
+    "baps.org": "calendar-only (festival dates, not local events)",
+    "drikpanchang.com": "panchang almanac, not events",
+    "instagram/facebook": "unreadable (no captions/login wall)"
+  },
+  "weights": {
+    "_note": "Raw weights; the scorer normalizes them to sum=1 before combining. Redundancy checked: proximity and sector_relevance are near-independent; recency is orthogonal to both.",
+    "proximity": 0.35,
+    "recency": 0.3,
+    "sector_relevance": 0.2,
+    "source_reliability": 0.15
+  },
+  "kernels": {
+    "proximity": {
+      "type": "linear_falloff",
+      "radius_km": 6.0,
+      "hard_cut": true,
+      "_desc": "1.0 at 0km, linear to 0.0 at 6km; beyond 6km => score 0 (hard gate)."
+    },
+    "recency": {
+      "type": "linear_decay",
+      "_desc": "1.0 at post/event time, linear to 0.0 at the sector's recency_window_h. For imminent sectors, measured from the EVENT start (negative age = upcoming) not post time."
+    }
+  },
+  "hard_gates": {
+    "_note": "A candidate scoring 0 on any hard gate is dropped before ranking, regardless of other layers.",
+    "timestamp_verified": "publish/update or event time must be confirmed from the source, not a search snippet",
+    "location_verified": "event must resolve inside 6km; a locality name merely appearing is not enough",
+    "not_duplicate": "deduped on event+location+entities; multi-day events announced once (keyed in sent_stories)"
+  },
+  "discovery": {
+    "_model": "HYBRID: poll feeds where they exist (cheap, precise); sweep-search only where no feed exists (fallback). Never keyword-sweep a community that already has a feed.",
+    "by_community": {
+      "tambrahm": {
+        "method": "source_poll",
+        "how": "community_feeds.py — YouTube RSS + Bhajan Samaj WP media/flyers",
+        "sweep": false
+      },
+      "jain": {
+        "method": "sweep_search",
+        "how": "Codex/WebFetch over parasdham.org + paramconnect (JS app, no feed)",
+        "sweep": true
+      },
+      "vaishnav": {
+        "method": "sweep_search",
+        "how": "Codex/WebFetch sweep for Pushtimarg Haveli, ISKCON Ghatkopar/Vidyavihar, Swaminarayan (BAPS Garodia Nagar / Vadtal Pant Nagar), Sri Ahobila Mutt Chembur events near Ghatkopar.",
+        "sweep": true
+      },
+      "news": {
+        "method": "hybrid",
+        "how": "poll FPJ/Lokmat index (crawlable) + Codex sweep for blocked outlets (Mid-Day/TOI/HT/etc.)",
+        "sweep": true
+      },
+      "fun_events": {
+        "method": "sweep_search",
+        "how": "Codex sweep: workshops/cultural events at Ghatkopar venues (Zaverben Popatlal Sabhagraha, community halls) + BookMyShow Ghatkopar.",
+        "sweep": true
+      },
+      "elder_health": {
+        "method": "sweep_search",
+        "how": "Codex sweep: senior-citizen medical/eye/health camps by local hospitals (Rajawadi, etc.), RWAs, Lions/Rotary clubs near Ghatkopar East.",
+        "sweep": true
+      }
+    },
+    "gaps": [
+      "jain derasars (no web presence at all — noticeboard/WhatsApp only)"
+    ]
+  },
+  "dedup": {
+    "_model": "Fingerprint on the SPECIFIC subject of THIS bullet, not the umbrella event it occurred at. Scope by signal_type so a bright/community item never collides with a news item.",
+    "fingerprint": "<sector>|<specific-subject-slug>|<date>  — sector prefix keeps signal_types from colliding",
+    "rules": [
+      "A distinct positive/human-interest sub-story of an already-sent event is NOT a duplicate. An award given AT the Dahi Handi is its own story (the honorees), separate from the Dahi Handi bullet.",
+      "Dedup a candidate only against prior rows of the SAME signal_type. A bright-spot checks only bright-spot history; news checks news.",
+      "True duplicates (same subject, same facts, another outlet) still collapse to one, keeping the strongest source.",
+      "A previously-sent story returns only on a material NEW development."
+    ],
+    "_fixed": "2026-09-07: was collapsing positive sub-stories into the parent event, starving the bright slot."
+  },
+  "religious_feeds": {
+    "youtube_title_filter": {
+      "_why": "2026-09-07: the Murugan temple posts a generic 'SRI SUBRAMANIA SAMAJ is live' daily with no program detail — a content-free bullet every day. Suppress it.",
+      "rule": "Emit a religious YouTube item ONLY if its title NAMES a program/festival. Drop generic livestreams whose title matches (case-insensitive) 'is live', 'live now', 'live stream', or is just the channel name.",
+      "keep_example": "Janmashtami Mahotsav 2026 | Bhajans by Guru Paduka Group  (Shankaralayam — titled -> keep)",
+      "drop_example": "SRI SUBRAMANIA SAMAJ is live  (Murugan — generic -> drop)",
+      "consequence": "Murugan will usually not appear; it surfaces only when a stream is titled (e.g. a Skanda Sashti / Nataraja Aradhana special). Honest: a daily untitled prayer stream is not news."
+    },
+    "_note": "EXAMPLE sources for Ghatkopar East. Replace org list + YouTube channel_ids with your locality's institutions."
+  }
+}
