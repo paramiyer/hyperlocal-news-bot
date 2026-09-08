@@ -96,6 +96,16 @@ def score_one(c, asof):
     return composite, layers, None
 
 
+
+def _venue_key(c):
+    import re as _re
+    v = c.get("venue") or ""
+    if not v:
+        h = (c.get("head","") or "") + " " + (c.get("body","") or "")
+        m = _re.search(r"\bat ([A-Z][^,.;\n]+)", h)
+        v = m.group(1) if m else (c.get("head","") or "")
+    return _re.sub(r"[^a-z0-9]+","-", v.lower()).strip("-")[:40]
+
 def score_candidates(candidates, asof):
     """Score all, group by signal_type, rank, apply caps."""
     out = {st: [] for st in TAX["signal_types"]}
@@ -110,6 +120,17 @@ def score_candidates(candidates, asof):
             out[st].append(rec)
     for st, cfg in TAX["signal_types"].items():
         out[st].sort(key=lambda r: r["score"], reverse=True)
+        mpv = cfg.get("max_per_venue")
+        if mpv:
+            seen = {}
+            kept = []
+            for r in out[st]:
+                vk = _venue_key(r)
+                if seen.get(vk, 0) >= mpv:
+                    r["gate"] = "CAPPED_VENUE_DIVERSITY"; dropped.append(r); continue
+                seen[vk] = seen.get(vk, 0) + 1
+                kept.append(r)
+            out[st] = kept
         out[st] = out[st][:cfg["cap"]]
     return out, dropped
 

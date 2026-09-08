@@ -25,7 +25,9 @@
     "community": {
       "output": "listed section",
       "cap": 4,
-      "select": "all_passing"
+      "select": "all_passing",
+      "max_per_venue": 2,
+      "_venue_note": "No single venue (e.g. one bar) may take more than 2 community slots — prevents 'four nights at The Finch' domination. Added 2026-09-09."
     }
   },
   "sectors": {

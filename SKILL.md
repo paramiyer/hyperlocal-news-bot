@@ -139,7 +139,15 @@ A real Jain event is announced TWICE, never daily (Param 2026-09-06):
   "arrive by 6 PM on 7 Sep"), ELSE the event start. Anchor on the deadline, NOT a fixed
   48h-before-start — a residential shibir must surface on its arrival day, not a day early.
   Phrase it to the deadline ("arrive by 6 PM today" / "starts tomorrow"). Key `...|<start>|reminder`.
-- **Between and after:** set `duplicate:true` so the scorer drops it.
+- **DURING the festival run (middle path, Param 2026-09-09):** do NOT fully suppress. While a
+  multi-day festival is ACTIVELY running (today is between its start and end date), emit ONE
+  compact "continues today" line — NOT a bullet per session:
+  `🛕 {Org} — {Festival} continues (Day N of M); today: {1-2 notable sessions, times}`
+  Dedup this line per DAY: fingerprint `{festival-slug}|continues|{today-date}` so it appears
+  at most once per day, no matter how many sessions the sweep returns. It reappears each day of
+  the run — presence, not flood.
+- **After the festival ENDS:** set `duplicate:true`, fully silent.
+- **Before it starts:** the announce + reminder touchpoints above still apply.
 
 The scorer keeps the event "valid" for up to 30 days out (horizon), but these two dedup keys
 are what make it appear only twice. Worked example — Paryushan (starts 8 Sep): shows 4 Sep
@@ -182,6 +190,10 @@ by local hospitals (Rajawadi etc.), RWAs, Lions/Rotary clubs, senior-citizen ass
 camp name, exact date/time, venue, organiser, URL. If none, say NONE."
 ```
 Both land in the 🤝 COMMUNITY section. If a sweep returns NONE, emit nothing for it (silent).
+
+**Set a `venue` field** on every community candidate (the hall/bar/space name). The scorer caps
+any single venue at `signal_types.community.max_per_venue` (2) so one bar/venue cannot dominate
+the section (fixes the 'four nights at one venue' case, 2026-09-09).
 
 ## 7.9 Verify every link (HARD — before compose)
 Run the link checker on the candidates file:
