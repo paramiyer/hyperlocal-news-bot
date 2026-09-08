@@ -53,6 +53,28 @@ def compose(day, ranked):
     asof = dt.datetime.fromisoformat(f"{day}T07:00:00+05:30")
     d = asof.strftime("%-d %b %Y")
     L = [f"📍 GARODIA NAGAR — 24H LOCAL BRIEF", f"🗓 {d} | 7:00 AM IST | 📡 ~6 km", ""]
+    # ORDER (Param 2026-09-09): COMMUNITY -> RELIGIOUS -> NEWS (bright spot stays with news)
+    comm = ranked.get("community", [])
+    if comm:
+        L.append("🤝 COMMUNITY")
+        for r in comm:
+            emoji = TAX["sectors"][r["sector"]]["emoji"]
+            line = f"• {emoji} {r['head']}"
+            if r.get("body"): line += f" — {r['body']}"
+            L.append(line)
+            L.append(f"  {r['url'] if _good_url(r.get('url','')) else _search_link(r.get('head',''), r.get('src',''))}")
+        L.append("")
+    rel = ranked["religious"]
+    if rel:
+        L.append("🛕 RELIGIOUS")
+        for r in rel:
+            tag = "TODAY: " if (TAX["sectors"][r["sector"]].get("imminent") and r.get("event_time")) else ""
+            line = f"• {r.get('org','?')} — {tag}{r['head']}"
+            if r.get("body"): line += f", {r['body']}"
+            L.append(line)
+            L.append(f"  {r['url'] if _good_url(r.get('url','')) else _search_link(r.get('head',''), r.get('src',''))}")
+        L.append("")
+    L.append("📰 NEWS")
     news = ranked["news"]
     if not news:
         L.append("No significant verified local news found in the last 24 hours."); L.append("")
@@ -68,29 +90,6 @@ def compose(day, ranked):
         if r.get("body"): L.append(r["body"])
         _u = r.get("url") if _good_url(r.get("url")) else _search_link(r.get("head",""), r.get("src",""))
         L.append(f"Source: {r['src']} — {_u}"); L.append("")
-    rel = ranked["religious"]
-    if rel:
-        L.append("🛕 RELIGIOUS")
-        for r in rel:
-            tag = "TODAY: " if (TAX["sectors"][r["sector"]].get("imminent") and r.get("event_time")) else ""
-            line = f"• {r.get('org','?')} — {tag}{r['head']}"
-            if r.get("body"): line += f", {r['body']}"
-            L.append(line)
-            L.append(f"  {r['url'] if _good_url(r.get('url','')) else _search_link(r.get('head',''), r.get('src',''))}")
-        L.append("")
-    comm = ranked.get("community", [])
-    if comm:
-        L.append("🤝 COMMUNITY")
-        for r in comm:
-            emoji = TAX["sectors"][r["sector"]]["emoji"]
-            tag = "TODAY: " if (TAX["sectors"][r["sector"]].get("announce_once") and r.get("event_time")
-                               and (dt.datetime.fromisoformat(f"{day}T07:00:00+05:30")
-                                    - dt.datetime.fromisoformat(r["event_time"])).total_seconds()/3600 > -24) else ""
-            line = f"• {emoji} {r['head']}"
-            if r.get("body"): line += f" — {r['body']}"
-            L.append(line)
-            L.append(f"  {r['url'] if _good_url(r.get('url','')) else _search_link(r.get('head',''), r.get('src',''))}")
-        L.append("")
     L.append("━━━━━━━━━━")
     L.append("Verified significant local news from the last 24 hrs only.")
     return "\n".join(L)

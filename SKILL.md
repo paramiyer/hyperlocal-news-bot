@@ -51,6 +51,20 @@ Official sites may be tried as primary sources, but as of 2026-09-01 these were 
 BMC portal (broken SAP iView), Instagram (captions never render), Facebook (login wall),
 X (HTTP 402). Don't burn more than one call each re-testing them.
 
+## 3.5 Second deeper pass (consistency — added 2026-09-09)
+LLM/Codex web discovery is stochastic: a single sweep samples the web differently each run, so
+marginal stories flicker in and out. To cut that variance, run discovery TWICE:
+- **Pass A:** the normal sweep (step 3 + all the 7.5x sweeps).
+- **Pass B:** a SECOND sweep with DIFFERENT angles — rephrase the queries, reorder/vary the
+  localities, and explicitly ask each source "what significant story within ~6km of Garodia
+  Nagar in the last 24h might a first search have MISSED?". For Codex, add a completeness prompt:
+  "List anything a prior sweep for this area/window likely missed — smaller outlets, Marathi
+  press, official notices."
+- **Merge:** pool Pass A + Pass B candidates, dedup by fingerprint (same subject = one).
+Two passes converge on the robust set (big stories appear in both; the tail stabilises). The
+timestamp + geography + dedup gates then apply to the merged pool as normal. Yes, it costs an
+extra sweep of tokens — that is the deliberate price of run-to-run consistency.
+
 ## 4. Timestamp validation (HARD)
 For EVERY surviving candidate, `WebFetch` the article and read its printed publish/update
 time. NEVER trust a search-result date. Exclude if `published_or_updated_at < cutoff_time`

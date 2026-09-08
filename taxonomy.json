@@ -247,6 +247,14 @@
     "mumbai_live": {
       "reliability": 0.75,
       "note": "hyperlocal Mumbai, crawlable"
+    },
+    "moneycontrol": {
+      "reliability": 0.85,
+      "note": "via Codex; crawler-blocked to us"
+    },
+    "india_today": {
+      "reliability": 0.85,
+      "note": "via Codex; crawler-blocked to us"
     }
   },
   "excluded_sources": {
@@ -335,7 +343,6 @@
       "keep_example": "Janmashtami Mahotsav 2026 | Bhajans by Guru Paduka Group  (Shankaralayam — titled -> keep)",
       "drop_example": "SRI SUBRAMANIA SAMAJ is live  (Murugan — generic -> drop)",
       "consequence": "Murugan will usually not appear; it surfaces only when a stream is titled (e.g. a Skanda Sashti / Nataraja Aradhana special). Honest: a daily untitled prayer stream is not news."
-    },
-    "_note": "EXAMPLE sources for Ghatkopar East. Replace org list + YouTube channel_ids with your locality's institutions."
+    }
   }
 }
