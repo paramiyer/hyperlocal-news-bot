@@ -86,7 +86,12 @@
       "signal_type": "religious",
       "resident_weight": 0.5,
       "recency_window_h": 24,
-      "emoji": "🛕"
+      "emoji": "🛕",
+      "announce_once": true,
+      "horizon_h": 720,
+      "reminder_window_h": 24,
+      "reminder_anchor": "deadline",
+      "_dated_events_note": "Dated flyer events (e.g. Bhajan Samaj Sama Veda Upakarma) carry event_time -> event-imminence (announce + reminder near the date). Livestreams have only post_time -> post-time recency, unchanged. Fixes the 2026-09-09 Sama Veda Upakarma miss."
     },
     "rel_jain": {
       "signal_type": "religious",

@@ -121,9 +121,15 @@ Gather from every discovery leg — WebSearch/WebFetch (FPJ, Lokmat), Codex (blo
 — and put them ALL in one candidates array. Over-include; the scorer drops what fails.
 
 ## 7.5 Religious feed candidates
-Run `python3 community_feeds.py 24`. SKIP any item the helper marks `[GENERIC-DROP]` — a generic untitled livestream ('… is live') carries no program detail and is not newsworthy (per `taxonomy.religious_feeds.youtube_title_filter`). Each in-window TITLED YouTube item and each in-window Bhajan
-Samaj flyer (read the image for the event) becomes a candidate with sector `rel_tambrahm`
-(or `rel_vaishnav`), source = its org key, post_time = the item's timestamp.
+Run `python3 community_feeds.py 24`. SKIP any item the helper marks `[GENERIC-DROP]` — a generic untitled livestream ('… is live') carries no program detail and is not newsworthy (per `taxonomy.religious_feeds.youtube_title_filter`). Each in-window TITLED YouTube item becomes a candidate with sector `rel_tambrahm`, source = its org key, **post_time** = the item's timestamp (livestreams are post-time).
+
+**Bhajan Samaj flyers are DATED EVENTS, not post-time items (fixed 2026-09-09).** Do NOT gate them
+on upload age. Read EVERY current flyer (see the poster-recognition block below), extract the
+printed EVENT date, and emit each FUTURE-dated event as a candidate with sector `rel_tambrahm`,
+source `bhajansamaj`, and **`event_time` = the EVENT date** (NOT the upload date). rel_tambrahm now
+has `announce_once`, so the scorer surfaces it via announce + reminder near the event date — a
+flyer put up weeks ahead (e.g. Sama Veda Upakarma, uploaded 17 Aug for 13 Sep) still surfaces near
+its date. This is the same event-imminence path as Parasdham (7.5b).
 
 ## 7.5b Parasdham (Jain) — search-discovered, TWO touchpoints
 Parasdham events live on `paramconnect.parasdham.org` (JS app, no feed) — DISCOVER by search.
@@ -487,7 +493,10 @@ while reading the posters found *Asthapadi Bhajan, 06 September* — happening t
 2. Pull full-size `.jpeg` URLs under `/wp-content/uploads/` (skip `-400x284` thumbnails).
 3. `HEAD` each for `Last-Modified` — that is the poster's publication timestamp.
 4. **Download and READ each poster as an image** to extract the printed event dates.
-5. Include an event if it is today/tomorrow, or the poster was published inside the window.
+5. Emit EVERY future-dated event with `event_time` = the EVENT date (regardless of when the
+   poster was uploaded). The scorer's event-imminence + the announce/reminder touchpoints decide
+   when it shows — do NOT filter here on the poster's upload/publish time. A poster uploaded weeks
+   ago for an upcoming event MUST still be emitted.
 
 NEVER infer a date from a filename or title. `Gokulashtami-2026.jpeg` does not tell you when
 Gokulashtami is. Read the image, or skip it.
