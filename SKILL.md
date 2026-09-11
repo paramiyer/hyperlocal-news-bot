@@ -1,19 +1,19 @@
 ---
 name: garodia-news-whatsapp-bot
-description: Send a hyperlocal 24h news digest (max 6 stories, ~6km around Garodia Nagar, Ghatkopar East) to the "__GROUP_NAME__" WhatsApp group. Runs daily at 07:00 Asia/Kolkata via a local launchd schedule (05:30 Asia/Dubai host time).
+description: Send a hyperlocal 24h news digest (max 6 stories, ~6km around Garodia Nagar, Ghatkopar East) to the "84 Gully Boyz" WhatsApp group. Runs daily at 07:00 Asia/Kolkata via a local launchd schedule (05:30 Asia/Dubai host time).
 ---
 
 # Garodia Nagar 24h local brief -> WhatsApp
 
-Config: `__BOT_DIR__/config.json`
-State:  `__BOT_DIR__/state.db`
+Config: `/Users/parameshwaraniyer/bots/garodia-news/config.json`
+State:  `/Users/parameshwaraniyer/bots/garodia-news/state.db`
 
 ## Dry-run mode
 If the prompt contains `DRY RUN`, execute every step EXCEPT step 9 (send).
 Print the diagnostics block and the exact message that WOULD be sent. Never send.
 
 ## 0. Pre-flight
-Call `mcp__whatsapp__list_chats(query: "__GROUP_NAME__")`. If the tool errors or is
+Call `mcp__whatsapp__list_chats(query: "84 Gully Boyz")`. If the tool errors or is
 unavailable, print `BOT_RESULT: FAILURE: whatsapp MCP not connected` and STOP —
 don't spend search calls on a send that can't happen.
 
@@ -74,8 +74,31 @@ Ghatkopar LBS Road crash looked current in search results and was actually 13 Se
 An old event qualifies ONLY on a genuinely material NEW development inside the window;
 summarize only the new development.
 
+**Ongoing issues — do NOT blanket-exclude as "old story" (loosened 2026-09-11).** A running
+issue (a standing water cut, a stalled project, a long inquiry) qualifies when there is a
+FRESH development in the window, even if the underlying issue is old. Count ALL of these as a
+new development: a committee/court/authority takes it up or is briefed on it; a NEW area is
+affected; fresh official data or a new figure is released; a new order, deadline, or start of
+work; a local body raises it. Example we missed on 2026-09-11: "10% water cut continues" alone
+is stale — but "Chembur-Govandi water-supply problems raised at the BMC Standing Committee" is
+a fresh, in-radius development and should surface. Summarize the NEW angle, not the backstory.
+Also: a CITYWIDE issue that specifically hits an in-radius locality (e.g. a water cut naming
+Chembur/Ghatkopar/Kurla) is NOT location-null — set dist_km to that in-radius area, don't drop
+it as `OUTSIDE_RADIUS`.
+
+**Citywide utility/infrastructure actions count as in-radius even when NO locality is named
+(widened 2026-09-11).** A BMC/MSEB/railway/authority ACTION on an essential service that blankets
+the whole city necessarily includes our area, so do NOT drop it as location-unknown. This covers:
+a water-supply order or a zone-wise/full-supply plan, a power-cut or load-shedding schedule, a
+gas/PNG disruption, a citywide transport change (megablock, fare, service suspension). Set
+`dist_km` to the origin (treat as in-radius, ~0) and let recency + the ongoing-issue rule decide.
+Example we missed on 2026-09-11: FPJ "BMC to map shortage hotspots, plan zone-wise full-supply
+days" names no locality but is a fresh citywide water ACTION — it should surface. GUARDRAIL: this
+is for concrete ACTIONS/orders/schedules only, not citywide mood/analysis pieces ("Mumbai's water
+woes explained") — those stay location-null and drop.
+
 ## 5. Geography (HARD)
-Event must have occurred within ~RADIUS_KM of your ORIGIN_LAT, ORIGIN_LON (from config.env). Use Haversine when coordinates
+Event must have occurred within ~6 km of 19.0790, 72.9080. Use Haversine when coordinates
 resolve; otherwise infer conservatively from locality/road/landmark/station/police
 jurisdiction/BMC ward. A locality name merely APPEARING in the article is not enough —
 on 2026-09-01 a "Ghatkopar businessman" extortion story actually occurred at Vakola,
@@ -204,7 +227,7 @@ the section (fixes the 'four nights at one venue' case, 2026-09-09).
 ## 7.9 Verify every link (HARD — before compose)
 Run the link checker on the candidates file:
 ```bash
-python3 __BOT_DIR__/verify_links.py /tmp/garodia-candidates.json
+python3 /Users/parameshwaraniyer/bots/garodia-news/verify_links.py /tmp/garodia-candidates.json
 ```
 For every candidate marked DEAD or GENERIC (dead link, truncated, or a bare section/home page
 like `timesofindia.com/city/mumbai`):
@@ -235,14 +258,14 @@ never the code, never per-item rules here.
 ## 9. Final validation, then send
 Before sending, assert ALL: selected <= 6; every story passed steps 4 and 5; every bullet
 has category + source + URL; summaries <= 2 lines; message non-empty; destination JID is
-`__GROUP_JID__` AND is in `config.allowlist` AND resolves to `__GROUP_NAME__`;
+`918898007799-1586183040@g.us` AND is in `config.allowlist` AND resolves to `84 Gully Boyz`;
 no prior SUCCESS row for this execution_id. If ANY assertion fails: DO NOT SEND.
 
-`mcp__whatsapp__send_message(recipient: "__GROUP_JID__", message: <text>)`
+`mcp__whatsapp__send_message(recipient: "918898007799-1586183040@g.us", message: <text>)`
 
 ## 10. Verify + record
 `send_message` returning `{"success": true}` is the primary signal. Then check
-`mcp__whatsapp__list_chats(query: "__GROUP_NAME__")`.
+`mcp__whatsapp__list_chats(query: "84 Gully Boyz")`.
 
 **KNOWN ISSUE — do not resend on failed verification.** Both `list_chats` and the bridge's
 local `messages.db` have repeatedly failed to surface a just-sent outgoing message while the
@@ -254,7 +277,7 @@ FAILURE if `send_message` ITSELF errored.
 
 **Persist deterministically (do NOT hand-write SQL).** After a confirmed send, run:
 ```bash
-python3 __BOT_DIR__/record.py --commit /tmp/garodia-selected.json
+python3 /Users/parameshwaraniyer/bots/garodia-news/record.py --commit /tmp/garodia-selected.json
 ```
 `render_brief.py` already wrote `/tmp/garodia-selected.json` (every selected item + its
 fingerprint). This records the execution row AND a `sent_stories` row for EVERY selected
@@ -442,7 +465,7 @@ Everything else is unchanged: still don't pad toward 6, fewer is still better th
 ## 🛕 RELIGIOUS FEEDS — separate section, added 2026-09-06 (renamed from COMMUNITY)
 Local temple/samaj feeds, as their OWN section — never mixed into the news ranking.
 ```bash
-python3 __BOT_DIR__/community_feeds.py 24
+python3 /Users/parameshwaraniyer/bots/garodia-news/community_feeds.py 24
 ```
 Orgs: **Ghatkopar Bhajan Samaj** (90 Feet Rd, Garodia Nagar) and **Shankaralayam Sanstha,
 Chedda Nagar / Hariharaputra Samaj** (Chembur). Both in-radius.
