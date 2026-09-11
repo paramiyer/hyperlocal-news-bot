@@ -75,6 +75,14 @@ def score_one(c, asof):
     elif c.get("post_time"):
         t = dt.datetime.fromisoformat(c["post_time"])
         age_h = (asof - t).total_seconds() / 3600.0
+        # HARD news-freshness cap: a post_time REPORT on the news signal_type is stale past
+        # news_post_max_age_h (24h), even if its sector carries a longer window. The 48h on the
+        # imminent sectors (transport/civic/traffic/alerts/utilities) is only for UPCOMING events
+        # reached via event_time above — not for old reports. Without this, a 25-48h-old report
+        # slipped through; the 24h cut used to be enforced by hand in SKILL step 4 only.
+        if sec["signal_type"] == "news":
+            cap = TAX["kernels"]["recency"].get("news_post_max_age_h", 24)
+            window = min(window, cap)
     else:
         age_h = None
 

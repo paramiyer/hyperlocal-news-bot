@@ -285,7 +285,8 @@
     },
     "recency": {
       "type": "linear_decay",
-      "_desc": "1.0 at post/event time, linear to 0.0 at the sector's recency_window_h. For imminent sectors, measured from the EVENT start (negative age = upcoming) not post time."
+      "_desc": "1.0 at post/event time, linear to 0.0 at the sector's recency_window_h. For imminent sectors, measured from the EVENT start (negative age = upcoming) not post time. HARD news-freshness cap: a POST_TIME item on the 'news' signal_type is gated if older than news_post_max_age_h (24h), even if its sector's window is longer (e.g. the 48h imminent sectors transport/civic/traffic/alerts/utilities) — that 48h is only for upcoming events via event_time.",
+      "news_post_max_age_h": 24
     }
   },
   "hard_gates": {
