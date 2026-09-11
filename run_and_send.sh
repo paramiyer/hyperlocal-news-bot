@@ -19,19 +19,48 @@ caffeinate -i -s -w $$ & disown
 if sqlite3 "$D/state.db" "select 1 from executions where execution_id='garodia-news-$DAY' and send_result like 'SUCCESS%';" | grep -q 1; then
   log "already sent today ($DAY) — exit."; exit 0; fi
 
-# 1) FRESH compose (writes MSG + SEL). Stamp start so we can prove freshness.
-STAMP=$(date +%s)
-log "=== compose start ==="
-rm -f "$MSG"
-"$WRAPPER" \
-  "COMPOSE ONLY. Read and follow $SKILL through step 8. render_brief.py writes $MSG and $SEL. Do NOT send. Print the message and BOT_RESULT: COMPOSED." \
-  "$LOG" "Bash Read WebSearch WebFetch" "Garodia compose"
+# 1) FRESH compose (writes MSG + SEL). Retry once after the usage-limit reset if we hit it.
+_compose(){
+  STAMP=$(date +%s); rm -f "$MSG"
+  _pre=$(wc -l <"$LOG" | tr -d ' ')      # log line count before this compose
+  "$WRAPPER" \
+    "COMPOSE ONLY. Read and follow $SKILL through step 8. render_brief.py writes $MSG and $SEL. Do NOT send. Print the message and BOT_RESULT: COMPOSED." \
+    "$LOG" "Bash Read WebSearch WebFetch" "Garodia compose"
+}
+_is_fresh(){ [ -s "$MSG" ] && [ "$(stat -f %m "$MSG")" -ge "$STAMP" ]; }
+_hit_limit(){ tail -n +"$((_pre+1))" "$LOG" | grep -qiE "hit your (usage|session) limit|resets [0-9]"; }
 
-# 2) freshness: MSG must exist AND be newer than this job's start (a real gather, not a stale file)
-if [ ! -s "$MSG" ] || [ "$(stat -f %m "$MSG")" -lt "$STAMP" ]; then
-  log "NO FRESH message (compose failed or stale file). Alerting, NOT sending."
+log "=== compose start ==="
+_compose
+if ! _is_fresh && _hit_limit; then
+  # RETRY-AFTER-RESET (added 2026-09-11): a quota limit at ~03:46 (before the 4:40 reset)
+  # used to lose the whole day. Wait until the reset time printed in the log, +5 min, then
+  # retry compose ONCE. Bounded to 90 min so a bad parse can't hang the job past the send.
+  WAKE=$(python3 -c "
+import re,datetime as dt
+txt=open('$LOG').read()
+m=re.findall(r'resets (\d{1,2}):(\d{2})\s*(am|pm)?', txt, re.I)
+tz=dt.timezone(dt.timedelta(hours=4)); now=dt.datetime.now(tz)
+if m:
+    h,mn,ap=m[-1]; h=int(h)%12+(12 if (ap or '').lower()=='pm' else 0)
+    t=now.replace(hour=h,minute=int(mn),second=0,microsecond=0)
+    if t<=now: t+=dt.timedelta(days=1)
+    wait=int((t-now).total_seconds())+300
+else:
+    wait=3600
+print(max(60,min(wait,5400)))
+")
+  log "compose hit the usage limit — waiting ${WAKE}s for reset, then ONE retry."
+  sleep "$WAKE"
+  log "=== compose retry (post-reset) ==="
+  _compose
+fi
+
+# 2) freshness gate — after any retry
+if ! _is_fresh; then
+  log "NO FRESH message (compose failed / still limited). Alerting, NOT sending."
   curl -s -m10 -X POST http://localhost:8080/api/send -H 'Content-Type: application/json' \
-   -d "{\"recipient\":\"$ALERT\",\"message\":\"⚠️ Garodia news: no fresh brief composed this morning — nothing sent. Check $LOG\"}" >>"$LOG" 2>&1
+   -d "{\"recipient\":\"$ALERT\",\"message\":\"⚠️ Garodia news: no fresh brief composed this morning (compose failed or quota still out after retry) — nothing sent. Check $LOG\"}" >>"$LOG" 2>&1
   exit 1
 fi
 log "fresh compose OK ($(stat -f %Sm "$MSG"))."
