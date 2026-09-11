@@ -90,12 +90,25 @@ it as `OUTSIDE_RADIUS`.
 (widened 2026-09-11).** A BMC/MSEB/railway/authority ACTION on an essential service that blankets
 the whole city necessarily includes our area, so do NOT drop it as location-unknown. This covers:
 a water-supply order or a zone-wise/full-supply plan, a power-cut or load-shedding schedule, a
-gas/PNG disruption, a citywide transport change (megablock, fare, service suspension). Set
-`dist_km` to the origin (treat as in-radius, ~0) and let recency + the ongoing-issue rule decide.
+gas/PNG disruption, a citywide fare/service change. GUARDRAIL: this is for concrete
+ACTIONS/orders/schedules only, not citywide mood/analysis pieces ("Mumbai's water woes explained")
+— those stay location-null and drop.
+
+**TRULY-CITYWIDE vs SECTIONAL — score by real local effect (refined 2026-09-12).** Do NOT set
+`dist_km` to ~0 for everything. Two cases:
+  • **Truly citywide** — a blanket order/schedule with no geographic boundary (a city-wide water
+    cut, a city-wide power-tariff change, a city-wide fare revision, an IMD/monsoon weather alert
+    for "Mumbai"). These inherently include our area: set `dist_km` ~0 (origin). Weather/IMD alerts
+    belong HERE — they cover the whole city by nature, so an alert naming only "Mumbai" is in-radius.
+  • **Sectional / named-corridor** — an action bounded to a stretch that is NOT our area (a
+    Thane–Kalyan megablock, a Kandivali depot strike, a Western-line block). Do NOT score it at 0 km.
+    Set `dist_km` to the NEAREST point where it actually touches an in-radius locality/line
+    (e.g. a Thane–Kalyan block that only makes Ghatkopar slow trains ~10 min late → set dist_km to
+    Ghatkopar, ~1.5 km, and let the small effect rank it low). If the sectional action does not
+    touch our area or lines AT ALL, drop it as `OUTSIDE_RADIUS`. Rationale: a far-off sectional block
+    must not lead a Garodia brief from 10 km away just because it is "rail".
 Example we missed on 2026-09-11: FPJ "BMC to map shortage hotspots, plan zone-wise full-supply
-days" names no locality but is a fresh citywide water ACTION — it should surface. GUARDRAIL: this
-is for concrete ACTIONS/orders/schedules only, not citywide mood/analysis pieces ("Mumbai's water
-woes explained") — those stay location-null and drop.
+days" names no locality but is a fresh, truly-citywide water ACTION — score at ~0 km, it should surface.
 
 ## 5. Geography (HARD)
 Event must have occurred within ~6 km of 19.0790, 72.9080. Use Haversine when coordinates
