@@ -35,16 +35,20 @@ def k_proximity(dist_km):
     return 1.0 - (dist_km / r)
 
 
-def k_recency(age_h, window_h):
+def k_recency(age_h, window_h, past_window_h=None):
     """linear decay, 1.0 at age 0 -> 0.0 at window. Upcoming events have
-    negative age (event in the future); clamp those to full freshness."""
+    negative age (event in the future); clamp those to full freshness.
+    past_window_h (optional) gives the POSITIVE-age side its own, shorter cutoff:
+    used for imminent event_time items so a past 'today' event goes stale fast
+    instead of lingering the full (future) window. Defaults to window_h."""
     if age_h is None:
         return 0.0
     if age_h < 0:            # event hasn't happened yet -> maximally 'fresh'
         return 1.0 if -age_h <= window_h else 0.0
-    if age_h > window_h:
+    pw = window_h if past_window_h is None else past_window_h
+    if pw <= 0 or age_h > pw:
         return 0.0
-    return 1.0 - (age_h / window_h)
+    return 1.0 - (age_h / pw)
 
 
 def _norm_weights():
@@ -59,6 +63,7 @@ def score_one(c, asof):
     sec = TAX["sectors"][c["sector"]]
     src = TAX["sources"].get(c["source"], {"reliability": 0.4})
     window = sec["recency_window_h"]
+    past_window = None      # positive-age cutoff; set for imminent events so a past event decays fast
 
     # recency: announce_once = a real upcoming event, fresh across a long lead window until
     # it is sent once (dedup then suppresses). imminent = measured from event start (short
@@ -72,6 +77,11 @@ def score_one(c, asof):
     elif sec.get("imminent") and c.get("event_time"):
         t = dt.datetime.fromisoformat(c["event_time"])
         age_h = (asof - t).total_seconds() / 3600.0
+        # PAST-EVENT GATE: upcoming events keep the full window; once STARTED (positive age) an
+        # imminent event stays fresh only imminent_past_grace_h (6h), then gates. Mirrors the 24h
+        # post cap so a "happening today" event can't linger up to 48h after it's over (e.g. a
+        # protest 14h past resurfacing as "protest today"). announce_once is untouched.
+        past_window = TAX["kernels"]["recency"].get("imminent_past_grace_h", 6)
     elif c.get("post_time"):
         t = dt.datetime.fromisoformat(c["post_time"])
         age_h = (asof - t).total_seconds() / 3600.0
@@ -88,7 +98,7 @@ def score_one(c, asof):
 
     layers = {
         "proximity":          k_proximity(c.get("dist_km")),
-        "recency":            k_recency(age_h, window),
+        "recency":            k_recency(age_h, window, past_window),
         "sector_relevance":   sec["resident_weight"],
         "source_reliability": src["reliability"],
     }

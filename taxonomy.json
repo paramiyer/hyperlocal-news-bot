@@ -262,6 +262,10 @@
     "india_today": {
       "reliability": 0.85,
       "note": "via Codex; crawler-blocked to us"
+    },
+    "imd": {
+      "reliability": 1.0,
+      "note": "official — India Meteorological Dept, Mumbai bulletins"
     }
   },
   "excluded_sources": {
@@ -285,8 +289,9 @@
     },
     "recency": {
       "type": "linear_decay",
-      "_desc": "1.0 at post/event time, linear to 0.0 at the sector's recency_window_h. For imminent sectors, measured from the EVENT start (negative age = upcoming) not post time. HARD news-freshness cap: a POST_TIME item on the 'news' signal_type is gated if older than news_post_max_age_h (24h), even if its sector's window is longer (e.g. the 48h imminent sectors transport/civic/traffic/alerts/utilities) — that 48h is only for upcoming events via event_time.",
-      "news_post_max_age_h": 24
+      "_desc": "1.0 at post/event time, linear to 0.0 at the sector's recency_window_h. For imminent sectors, measured from the EVENT start (negative age = upcoming) not post time. HARD news-freshness cap: a POST_TIME item on the 'news' signal_type is gated if older than news_post_max_age_h (24h), even if its sector's window is longer (e.g. the 48h imminent sectors transport/civic/traffic/alerts/utilities) — that 48h is only for upcoming events via event_time. PAST-EVENT GATE: for imminent event_time items, once the event has STARTED (positive age) it stays fresh only imminent_past_grace_h (6h), then gates — mirrors the 24h post cap so a past 'happening today' event can't linger up to 48h. Upcoming (negative age) events keep the full window/horizon. announce_once (multi-day festivals, reminders) is unaffected.",
+      "news_post_max_age_h": 24,
+      "imminent_past_grace_h": 6
     }
   },
   "hard_gates": {
